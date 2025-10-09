@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'stripe' => [
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET', ''),
+    ],
+
+    'shopify' => [
+        'webhook_secret' => env('SHOPIFY_WEBHOOK_SECRET', ''),
+    ],
+
 ];
