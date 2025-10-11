@@ -6,6 +6,7 @@ use App\DTOs\WebhookPayloadDTO;
 use App\Http\Controllers\Controller;
 use App\Models\WebhookEvent;
 use App\Models\WebhookLog;
+use App\Services\RedisIdempotencyService;
 use App\Services\Validators\GenericWebhookValidator;
 use App\Services\Validators\ShopifyWebhookValidator;
 use App\Services\Validators\StripeWebhookValidator;
@@ -15,6 +16,10 @@ use Throwable;
 
 class WebhookIngestionController extends Controller
 {
+    public function __construct(
+        private readonly RedisIdempotencyService $idempotencyService
+    ) {}
+
     public function ingest(Request $request, string $provider): JsonResponse
     {
         $startTime = microtime(true);
@@ -60,6 +65,28 @@ class WebhookIngestionController extends Controller
             ], 422);
         }
 
+        // Check Redis Idempotency
+        if ($this->idempotencyService->isProcessed($provider, $eventId) || ! $this->idempotencyService->acquireLock($provider, $eventId)) {
+            $executionTimeMs = round((microtime(true) - $startTime) * 1000, 2);
+            WebhookLog::create([
+                'provider' => $provider,
+                'event_id' => $eventId,
+                'http_method' => $request->method(),
+                'headers' => $request->headers->all(),
+                'payload' => $dto->payload,
+                'ip_address' => $request->ip(),
+                'response_code' => 409,
+                'execution_time_ms' => $executionTimeMs,
+            ]);
+
+            return response()->json([
+                'status' => 'duplicate',
+                'message' => 'Duplicate webhook event received and ignored',
+                'event_id' => $eventId,
+                'provider' => $provider,
+            ], 409);
+        }
+
         try {
             $webhookEvent = WebhookEvent::updateOrCreate(
                 [
@@ -94,6 +121,7 @@ class WebhookIngestionController extends Controller
                 'provider' => $webhookEvent->provider,
             ], 202);
         } catch (Throwable $e) {
+            $this->idempotencyService->releaseLock($provider, $eventId);
             $executionTimeMs = round((microtime(true) - $startTime) * 1000, 2);
 
             WebhookLog::create([
