@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\ProcessWebhookJob;
 use App\Models\WebhookEvent;
 use App\Models\WebhookLog;
 use App\Services\RedisIdempotencyService;
@@ -85,6 +86,9 @@ class WebhookIngestionController extends Controller
                     'status' => WebhookEvent::STATUS_PENDING,
                 ]
             );
+
+            // Dispatch to Horizon Queue
+            ProcessWebhookJob::dispatch($webhookEvent);
 
             $executionTimeMs = round((microtime(true) - $startTime) * 1000, 2);
 
