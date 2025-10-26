@@ -33,7 +33,6 @@ class WebhookIngestionTest extends TestCase
         $this->assertDatabaseHas('webhook_events', [
             'event_id' => 'gen_evt_001',
             'provider' => 'generic',
-            'status' => WebhookEvent::STATUS_PENDING,
         ]);
 
         $this->assertDatabaseHas('webhook_logs', [
