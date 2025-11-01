@@ -1,7 +1,10 @@
 <?php
 
+use App\Livewire\DashboardMetrics;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/admin/dashboard');
 });
+
+Route::get('/admin/dashboard', DashboardMetrics::class)->name('admin.dashboard');
