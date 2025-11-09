@@ -12,13 +12,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $provider
  * @property string|null $event_id
  * @property string $http_method
- * @property array|null $headers
- * @property array|null $payload
+ * @property array<string, mixed>|null $headers
+ * @property array<string, mixed>|null $payload
  * @property string|null $ip_address
  * @property int $response_code
  * @property float $execution_time_ms
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @use HasFactory<\Illuminate\Database\Eloquent\Factories\Factory<WebhookLog>>
  */
 class WebhookLog extends Model
 {
@@ -46,6 +47,9 @@ class WebhookLog extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<WebhookEvent, $this>
+     */
     public function webhookEvent(): BelongsTo
     {
         return $this->belongsTo(WebhookEvent::class);

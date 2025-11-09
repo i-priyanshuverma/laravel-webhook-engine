@@ -44,6 +44,7 @@ class DeadLetterQueueService
      */
     public function replayEvent(DeadLetterQueueEvent $dlqEvent, ?string $replayedBy = null): bool
     {
+        /** @var WebhookEvent|null $webhookEvent */
         $webhookEvent = $dlqEvent->webhookEvent;
 
         if (! $webhookEvent) {

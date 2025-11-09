@@ -18,7 +18,7 @@ class RedisIdempotencyService
 
         try {
             /** @var bool|string $result */
-            $result = Redis::set($key, 'locked', 'EX', $ttl, 'NX');
+            $result = Redis::set($key, 'locked', ['ex' => $ttl, 'nx']);
 
             return (bool) $result;
         } catch (Throwable $e) {
@@ -62,7 +62,7 @@ class RedisIdempotencyService
         $key = $this->buildKey($provider, $eventId) . ':completed';
 
         try {
-            Redis::set($key, 'processed', 'EX', $ttl);
+            Redis::set($key, 'processed', ['ex' => $ttl]);
         } catch (Throwable $e) {
             // Ignore
         }

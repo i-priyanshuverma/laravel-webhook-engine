@@ -12,13 +12,14 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string $event_id
  * @property string $provider
  * @property string $event_type
- * @property array $payload
+ * @property array<string, mixed> $payload
  * @property string $status
  * @property int $retry_count
  * @property string|null $error_message
  * @property \Illuminate\Support\Carbon|null $processed_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @use HasFactory<\Illuminate\Database\Eloquent\Factories\Factory<WebhookEvent>>
  */
 class WebhookEvent extends Model
 {
@@ -49,11 +50,17 @@ class WebhookEvent extends Model
         ];
     }
 
+    /**
+     * @return HasMany<WebhookLog, $this>
+     */
     public function logs(): HasMany
     {
         return $this->hasMany(WebhookLog::class);
     }
 
+    /**
+     * @return HasOne<DeadLetterQueueEvent, $this>
+     */
     public function deadLetterQueueEvent(): HasOne
     {
         return $this->hasOne(DeadLetterQueueEvent::class);

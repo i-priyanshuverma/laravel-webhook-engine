@@ -17,10 +17,12 @@ class WebhookAlertManager
             ->where('created_at', '>=', now()->subMinutes(15))
             ->count();
 
+        $eventId = $dlqEvent->webhookEvent ? $dlqEvent->webhookEvent->event_id : (string) $dlqEvent->id;
+
         Log::error(sprintf(
             '[DLQ Alert] Webhook failure captured for provider %s event %s: %s',
             $dlqEvent->provider,
-            $dlqEvent->webhookEvent?->event_id ?? (string) $dlqEvent->id,
+            $eventId,
             $dlqEvent->exception_message
         ), [
             'dlq_event_id' => $dlqEvent->id,

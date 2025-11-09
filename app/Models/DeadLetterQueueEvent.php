@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $webhook_event_id
  * @property string $provider
  * @property string $event_type
- * @property array $payload
+ * @property array<string, mixed> $payload
  * @property string $exception_class
  * @property string $exception_message
  * @property string $stack_trace
@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $status
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read WebhookEvent|null $webhookEvent
+ * @use HasFactory<\Illuminate\Database\Eloquent\Factories\Factory<DeadLetterQueueEvent>>
  */
 class DeadLetterQueueEvent extends Model
 {
@@ -53,6 +55,9 @@ class DeadLetterQueueEvent extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<WebhookEvent, $this>
+     */
     public function webhookEvent(): BelongsTo
     {
         return $this->belongsTo(WebhookEvent::class);
