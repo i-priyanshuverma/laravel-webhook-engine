@@ -34,20 +34,20 @@ class VerifyWebhookSignature
         if (empty($signature)) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Missing HMAC signature header for provider: ' . $provider,
+                'message' => 'Missing HMAC signature header for provider: '.$provider,
             ], 401);
         }
 
         $validator = match ($provider) {
-            'stripe' => new StripeWebhookValidator(),
-            'shopify' => new ShopifyWebhookValidator(),
+            'stripe' => new StripeWebhookValidator,
+            'shopify' => new ShopifyWebhookValidator,
             default => null,
         };
 
         if ($validator && ! $validator->verifySignature($rawPayload, $signature, $secret)) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Invalid HMAC signature for provider: ' . $provider,
+                'message' => 'Invalid HMAC signature for provider: '.$provider,
             ], 401);
         }
 

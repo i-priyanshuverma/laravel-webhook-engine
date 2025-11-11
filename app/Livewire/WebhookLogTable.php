@@ -12,8 +12,11 @@ class WebhookLogTable extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $providerFilter = '';
+
     public string $responseCodeFilter = '';
+
     public ?int $selectedLogId = null;
 
     public function updatingSearch(): void
@@ -42,8 +45,8 @@ class WebhookLogTable extends Component
 
         if (! empty($this->search)) {
             $query->where(function ($q) {
-                $q->where('event_id', 'like', '%' . $this->search . '%')
-                    ->orWhere('ip_address', 'like', '%' . $this->search . '%');
+                $q->where('event_id', 'like', '%'.$this->search.'%')
+                    ->orWhere('ip_address', 'like', '%'.$this->search.'%');
             });
         }
 

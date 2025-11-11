@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\WebhookEvent;
-use App\Models\WebhookLog;
 use App\Services\RedisIdempotencyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
@@ -53,7 +51,7 @@ class WebhookIngestionTest extends TestCase
         ]);
 
         $timestamp = time();
-        $signedPayload = $timestamp . '.' . $payload;
+        $signedPayload = $timestamp.'.'.$payload;
         $signature = hash_hmac('sha256', $signedPayload, $secret);
         $headerValue = "t={$timestamp},v1={$signature}";
 

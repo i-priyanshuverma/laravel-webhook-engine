@@ -25,7 +25,7 @@ class DeadLetterQueueServiceTest extends TestCase
             'status' => WebhookEvent::STATUS_FAILED,
         ]);
 
-        $dlqService = new DeadLetterQueueService();
+        $dlqService = new DeadLetterQueueService;
         $exception = new RuntimeException('Connection timed out');
 
         $record = $dlqService->captureFailedJob($event, $exception);
@@ -60,7 +60,7 @@ class DeadLetterQueueServiceTest extends TestCase
             'status' => DeadLetterQueueEvent::STATUS_UNRESOLVED,
         ]);
 
-        $dlqService = new DeadLetterQueueService();
+        $dlqService = new DeadLetterQueueService;
         $result = $dlqService->replayEvent($dlqEvent, 'admin_user');
 
         $this->assertTrue($result);

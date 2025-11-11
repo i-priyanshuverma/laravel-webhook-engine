@@ -19,8 +19,6 @@ class ProcessWebhookJob implements ShouldQueue
 
     /**
      * The number of times the job may be attempted.
-     *
-     * @var int
      */
     public int $tries = 4;
 
@@ -47,7 +45,7 @@ class ProcessWebhookJob implements ShouldQueue
         // Process webhook logic (e.g. business logic, third party dispatches)
         // Here we simulate successful processing or throwing exception if payload triggers error
         if (isset($this->webhookEvent->payload['should_fail']) && $this->webhookEvent->payload['should_fail'] === true) {
-            throw new \RuntimeException('Simulated processing failure for event: ' . $this->webhookEvent->event_id);
+            throw new \RuntimeException('Simulated processing failure for event: '.$this->webhookEvent->event_id);
         }
 
         $this->webhookEvent->update([

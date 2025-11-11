@@ -33,9 +33,9 @@ class WebhookDtoParserService
         };
 
         $eventId = match ($provider) {
-            'stripe' => (string) ($jsonData['id'] ?? 'evt_' . $hashFallback($rawPayload)),
-            'shopify' => (string) ($request->header('X-Shopify-Webhook-Id') ?? $jsonData['id'] ?? 'shp_' . $hashFallback($rawPayload)),
-            default => (string) ($jsonData['event_id'] ?? $jsonData['id'] ?? 'gen_' . $hashFallback($rawPayload)),
+            'stripe' => (string) ($jsonData['id'] ?? 'evt_'.$hashFallback($rawPayload)),
+            'shopify' => (string) ($request->header('X-Shopify-Webhook-Id') ?? $jsonData['id'] ?? 'shp_'.$hashFallback($rawPayload)),
+            default => (string) ($jsonData['event_id'] ?? $jsonData['id'] ?? 'gen_'.$hashFallback($rawPayload)),
         };
 
         $eventType = match ($provider) {

@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -15,21 +17,24 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $exception_class
  * @property string $exception_message
  * @property string $stack_trace
- * @property \Illuminate\Support\Carbon $failed_at
- * @property \Illuminate\Support\Carbon|null $replayed_at
+ * @property Carbon $failed_at
+ * @property Carbon|null $replayed_at
  * @property string|null $replayed_by
  * @property string $status
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read WebhookEvent|null $webhookEvent
- * @use HasFactory<\Illuminate\Database\Eloquent\Factories\Factory<DeadLetterQueueEvent>>
+ *
+ * @use HasFactory<Factory<DeadLetterQueueEvent>>
  */
 class DeadLetterQueueEvent extends Model
 {
     use HasFactory;
 
     public const STATUS_UNRESOLVED = 'unresolved';
+
     public const STATUS_REPLAYED = 'replayed';
+
     public const STATUS_IGNORED = 'ignored';
 
     protected $fillable = [

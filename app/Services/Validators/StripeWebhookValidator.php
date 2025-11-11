@@ -37,7 +37,7 @@ class StripeWebhookValidator implements WebhookValidatorInterface
             return false;
         }
 
-        $signedPayload = $timestamp . '.' . $rawPayload;
+        $signedPayload = $timestamp.'.'.$rawPayload;
         $expectedSignature = hash_hmac('sha256', $signedPayload, $secret);
 
         return hash_equals($expectedSignature, $v1Signature);

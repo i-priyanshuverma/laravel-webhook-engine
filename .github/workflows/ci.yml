@@ -1,0 +1,55 @@
+name: CI / CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-and-analyze:
+    name: Pint, PHPStan & PHPUnit
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: webhook_engine_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP environment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo, pdo_mysql, redis, bcmath
+          coverage: none
+
+      - name: Install Composer Dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Run Laravel Pint Code Formatter Check
+        run: ./vendor/bin/pint --test
+
+      - name: Run PHPStan Level 8 Static Analysis
+        run: ./vendor/bin/phpstan analyse --level=8 --memory-limit=512M
+
+      - name: Run PHPUnit Test Suite
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+          QUEUE_CONNECTION: sync
+        run: ./vendor/bin/phpunit

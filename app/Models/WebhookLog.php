@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -17,9 +19,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $ip_address
  * @property int $response_code
  * @property float $execution_time_ms
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @use HasFactory<\Illuminate\Database\Eloquent\Factories\Factory<WebhookLog>>
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ *
+ * @use HasFactory<Factory<WebhookLog>>
  */
 class WebhookLog extends Model
 {

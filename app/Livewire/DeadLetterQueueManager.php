@@ -13,7 +13,9 @@ class DeadLetterQueueManager extends Component
     use WithPagination;
 
     public string $statusFilter = 'unresolved';
+
     public string $providerFilter = '';
+
     public ?int $selectedDlqId = null;
 
     public function replay(int $id, DeadLetterQueueService $dlqService): void

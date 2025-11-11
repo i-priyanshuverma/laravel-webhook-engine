@@ -45,7 +45,7 @@ class RedisIdempotencyService
      */
     public function isProcessed(string $provider, string $eventId): bool
     {
-        $key = $this->buildKey($provider, $eventId) . ':completed';
+        $key = $this->buildKey($provider, $eventId).':completed';
 
         try {
             return (bool) Redis::exists($key);
@@ -59,7 +59,7 @@ class RedisIdempotencyService
      */
     public function markProcessed(string $provider, string $eventId, int $ttl = self::DEFAULT_TTL): void
     {
-        $key = $this->buildKey($provider, $eventId) . ':completed';
+        $key = $this->buildKey($provider, $eventId).':completed';
 
         try {
             Redis::set($key, 'processed', ['ex' => $ttl]);

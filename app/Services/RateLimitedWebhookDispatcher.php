@@ -14,7 +14,7 @@ class RateLimitedWebhookDispatcher
      */
     public function dispatch(WebhookEvent $event, string $destinationUrl, int $maxAttempts = 60, int $decaySeconds = 60): bool
     {
-        $throttleKey = 'dispatcher:' . strtolower($event->provider);
+        $throttleKey = 'dispatcher:'.strtolower($event->provider);
 
         try {
             $executed = false;
@@ -34,7 +34,7 @@ class RateLimitedWebhookDispatcher
                         $executed = $response->successful();
                     },
                     function () use ($event): void {
-                        throw new \RuntimeException('Rate limit exceeded for dispatcher key: ' . $event->provider);
+                        throw new \RuntimeException('Rate limit exceeded for dispatcher key: '.$event->provider);
                     }
                 );
 

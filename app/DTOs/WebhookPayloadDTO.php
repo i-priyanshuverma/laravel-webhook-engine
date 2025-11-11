@@ -5,8 +5,8 @@ namespace App\DTOs;
 readonly class WebhookPayloadDTO
 {
     /**
-     * @param array<string, mixed> $payload
-     * @param array<string, mixed> $headers
+     * @param  array<string, mixed>  $payload
+     * @param  array<string, mixed>  $headers
      */
     public function __construct(
         public string $eventId,
@@ -19,7 +19,7 @@ readonly class WebhookPayloadDTO
     ) {}
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public static function fromArray(array $data): self
     {

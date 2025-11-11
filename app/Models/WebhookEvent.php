@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -16,18 +18,22 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string $status
  * @property int $retry_count
  * @property string|null $error_message
- * @property \Illuminate\Support\Carbon|null $processed_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @use HasFactory<\Illuminate\Database\Eloquent\Factories\Factory<WebhookEvent>>
+ * @property Carbon|null $processed_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ *
+ * @use HasFactory<Factory<WebhookEvent>>
  */
 class WebhookEvent extends Model
 {
     use HasFactory;
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_PROCESSING = 'processing';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_FAILED = 'failed';
 
     protected $fillable = [

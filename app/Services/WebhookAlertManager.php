@@ -52,7 +52,7 @@ class WebhookAlertManager
     }
 
     /**
-     * @param array<string, mixed> $context
+     * @param  array<string, mixed>  $context
      */
     public function sendSlackNotification(string $message, array $context, string $webhookUrl): void
     {
@@ -71,7 +71,7 @@ class WebhookAlertManager
                 ],
             ]);
         } catch (Throwable $e) {
-            Log::warning('Failed to send Slack alert: ' . $e->getMessage());
+            Log::warning('Failed to send Slack alert: '.$e->getMessage());
         }
     }
 

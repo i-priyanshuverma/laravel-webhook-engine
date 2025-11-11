@@ -28,9 +28,9 @@ class WebhookIngestionController extends Controller
         $dto = $this->dtoParserService->parseRequest($request, $provider);
 
         $validator = match ($dto->provider) {
-            'stripe' => new StripeWebhookValidator(),
-            'shopify' => new ShopifyWebhookValidator(),
-            default => new GenericWebhookValidator(),
+            'stripe' => new StripeWebhookValidator,
+            'shopify' => new ShopifyWebhookValidator,
+            default => new GenericWebhookValidator,
         };
 
         if (! $validator->validate($dto)) {
@@ -48,7 +48,7 @@ class WebhookIngestionController extends Controller
 
             return response()->json([
                 'status' => 'error',
-                'message' => 'Invalid webhook payload structure for provider: ' . $dto->provider,
+                'message' => 'Invalid webhook payload structure for provider: '.$dto->provider,
             ], 422);
         }
 
@@ -127,7 +127,7 @@ class WebhookIngestionController extends Controller
 
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to persist webhook event: ' . $e->getMessage(),
+                'message' => 'Failed to persist webhook event: '.$e->getMessage(),
             ], 500);
         }
     }
