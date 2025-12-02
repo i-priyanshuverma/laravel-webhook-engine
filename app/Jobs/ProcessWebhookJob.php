@@ -11,6 +11,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class ProcessWebhookJob implements ShouldQueue
@@ -35,15 +36,38 @@ class ProcessWebhookJob implements ShouldQueue
         $this->queue = $this->determineQueue($webhookEvent);
     }
 
+    /**
+     * Calculate dynamic exponential backoff with randomized jitter.
+     */
+    public function backoff(): int
+    {
+        $attempt = max(1, $this->attempts());
+        $baseDelay = (int) (10 * pow(2, $attempt - 1));
+        $jitter = rand(1, 5);
+
+        return min(300, $baseDelay + $jitter);
+    }
+
     public function handle(RedisIdempotencyService $idempotencyService): void
     {
+        Log::info(sprintf(
+            '[ProcessWebhookJob] Processing event %s (provider: %s, attempt: %d/%d)',
+            $this->webhookEvent->event_id,
+            $this->webhookEvent->provider,
+            $this->attempts(),
+            $this->tries
+        ), [
+            'event_id' => $this->webhookEvent->event_id,
+            'provider' => $this->webhookEvent->provider,
+            'event_type' => $this->webhookEvent->event_type,
+            'attempt' => $this->attempts(),
+        ]);
+
         $this->webhookEvent->update([
             'status' => WebhookEvent::STATUS_PROCESSING,
             'retry_count' => $this->attempts(),
         ]);
 
-        // Process webhook logic (e.g. business logic, third party dispatches)
-        // Here we simulate successful processing or throwing exception if payload triggers error
         if (isset($this->webhookEvent->payload['should_fail']) && $this->webhookEvent->payload['should_fail'] === true) {
             throw new \RuntimeException('Simulated processing failure for event: '.$this->webhookEvent->event_id);
         }
@@ -62,6 +86,17 @@ class ProcessWebhookJob implements ShouldQueue
 
     public function failed(Throwable $exception): void
     {
+        Log::error(sprintf(
+            '[ProcessWebhookJob] Permanently failed event %s (provider: %s): %s',
+            $this->webhookEvent->event_id,
+            $this->webhookEvent->provider,
+            $exception->getMessage()
+        ), [
+            'event_id' => $this->webhookEvent->event_id,
+            'provider' => $this->webhookEvent->provider,
+            'exception' => $exception->getMessage(),
+        ]);
+
         $this->webhookEvent->update([
             'status' => WebhookEvent::STATUS_FAILED,
             'error_message' => $exception->getMessage(),

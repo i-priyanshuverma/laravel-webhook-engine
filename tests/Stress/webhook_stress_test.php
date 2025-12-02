@@ -1,6 +1,6 @@
 <?php
 
-require __DIR__ . '/../../vendor/autoload.php';
+require __DIR__.'/../../vendor/autoload.php';
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Pool;
@@ -33,7 +33,7 @@ $requests = function ($total) {
 
     for ($i = 1; $i <= $total; $i++) {
         $provider = $providers[array_rand($providers)];
-        $eventId = 'stress_' . $provider . '_' . sprintf('%04d', (int) ceil($i / 2));
+        $eventId = 'stress_'.$provider.'_'.sprintf('%04d', (int) ceil($i / 2));
 
         $payload = json_encode([
             'id' => $eventId,
@@ -83,10 +83,10 @@ $rps = round($totalRequests / max($totalTime, 0.001), 2);
 echo "=====================================================\n";
 echo "                  BENCHMARK RESULTS                  \n";
 echo "=====================================================\n";
-echo "Total Elapsed Time:   " . number_format($totalTime, 3) . " s\n";
+echo 'Total Elapsed Time:   '.number_format($totalTime, 3)." s\n";
 echo "Throughput (RPS):     {$rps} req/sec\n";
 echo "Successful Ingested:  {$successCount} (202 Accepted)\n";
 echo "Duplicate Rejected:   {$duplicateCount} (409 Conflict)\n";
 echo "Errors / Failed:      {$errorCount}\n";
-echo "Success + Dup Rate:   " . round((($successCount + $duplicateCount) / max($totalRequests, 1)) * 100, 2) . "%\n";
+echo 'Success + Dup Rate:   '.round((($successCount + $duplicateCount) / max($totalRequests, 1)) * 100, 2)."%\n";
 echo "=====================================================\n";
