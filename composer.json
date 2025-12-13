@@ -2,7 +2,7 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "laravel/laravel",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "High-Throughput Enterprise Webhook Ingestion Engine built with Laravel 11, Horizon, Redis & Livewire v3.",
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
