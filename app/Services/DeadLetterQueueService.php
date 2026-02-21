@@ -42,7 +42,7 @@ class DeadLetterQueueService
     /**
      * Replay a failed DLQ event by resetting event status and re-dispatching job.
      */
-    public function replayEvent(DeadLetterQueueEvent $dlqEvent, ?string $replayedBy = null): bool
+    public function replayEvent(DeadLetterQueueEvent $dlqEvent, ?string $replayedBy = null, int $delaySeconds = 0): bool
     {
         /** @var WebhookEvent|null $webhookEvent */
         $webhookEvent = $dlqEvent->webhookEvent;
@@ -69,9 +69,40 @@ class DeadLetterQueueService
             'replayed_by' => $replayedBy ?? 'system_admin',
         ]);
 
-        ProcessWebhookJob::dispatch($webhookEvent);
+        $pendingJob = ProcessWebhookJob::dispatch($webhookEvent);
+        if ($delaySeconds > 0) {
+            $pendingJob->delay(now()->addSeconds($delaySeconds));
+        }
 
         return true;
+    }
+
+    /**
+     * Replay unresolved DLQ events in bulk with exponential backoff delays to prevent thundering herd.
+     *
+     * @param  array<int>  $dlqIds
+     */
+    public function replayBulkWithExponentialBackoff(array $dlqIds = [], ?string $replayedBy = null): int
+    {
+        $query = DeadLetterQueueEvent::where('status', DeadLetterQueueEvent::STATUS_UNRESOLVED);
+
+        if (! empty($dlqIds)) {
+            $query->whereIn('id', $dlqIds);
+        }
+
+        $unresolvedEvents = $query->get();
+        $replayedCount = 0;
+
+        foreach ($unresolvedEvents as $index => $dlqEvent) {
+            // Exponential delay schedule per item: 0s, 10s, 30s, 90s, 270s... capped at 300s
+            $delaySeconds = (int) min(300, 10 * (int) pow(3, min($index, 5)));
+
+            if ($this->replayEvent($dlqEvent, $replayedBy ?? 'bulk_exponential_retry', $delaySeconds)) {
+                $replayedCount++;
+            }
+        }
+
+        return $replayedCount;
     }
 
     /**

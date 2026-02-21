@@ -37,16 +37,8 @@ class DeadLetterQueueManager extends Component
 
     public function replayAll(DeadLetterQueueService $dlqService): void
     {
-        $unresolvedEvents = DeadLetterQueueEvent::where('status', DeadLetterQueueEvent::STATUS_UNRESOLVED)->get();
-        $count = 0;
-
-        foreach ($unresolvedEvents as $event) {
-            if ($dlqService->replayEvent($event, 'admin_ui_bulk')) {
-                $count++;
-            }
-        }
-
-        session()->flash('message', "Successfully replayed {$count} unresolved DLQ events.");
+        $count = $dlqService->replayBulkWithExponentialBackoff([], 'admin_ui_bulk');
+        session()->flash('message', "Successfully queued {$count} unresolved DLQ events with bulk exponential backoff.");
     }
 
     public function render(): View

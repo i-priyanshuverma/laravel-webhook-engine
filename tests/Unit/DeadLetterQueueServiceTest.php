@@ -76,4 +76,36 @@ class DeadLetterQueueServiceTest extends TestCase
             return $job->webhookEvent->id === $event->id;
         });
     }
+
+    public function test_dlq_service_replays_bulk_with_exponential_backoff(): void
+    {
+        Queue::fake();
+
+        $event1 = WebhookEvent::create([
+            'event_id' => 'evt_bulk_1',
+            'provider' => 'stripe',
+            'event_type' => 'charge.failed',
+            'payload' => [],
+            'status' => WebhookEvent::STATUS_FAILED,
+        ]);
+
+        $dlq1 = DeadLetterQueueEvent::create([
+            'webhook_event_id' => $event1->id,
+            'provider' => 'stripe',
+            'event_type' => 'charge.failed',
+            'payload' => [],
+            'exception_class' => RuntimeException::class,
+            'exception_message' => 'Failed 1',
+            'stack_trace' => 'trace',
+            'failed_at' => now(),
+            'status' => DeadLetterQueueEvent::STATUS_UNRESOLVED,
+        ]);
+
+        $dlqService = new DeadLetterQueueService;
+        $count = $dlqService->replayBulkWithExponentialBackoff([$dlq1->id], 'bulk_admin');
+
+        $this->assertEquals(1, $count);
+        $this->assertEquals(DeadLetterQueueEvent::STATUS_REPLAYED, $dlq1->fresh()->status);
+        Queue::assertPushed(ProcessWebhookJob::class);
+    }
 }
