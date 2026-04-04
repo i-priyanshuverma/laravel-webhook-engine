@@ -1,4 +1,4 @@
-<div class="space-y-6">
+<div wire:poll.5s class="space-y-6">
     <div>
         <h1 class="text-2xl font-bold text-white tracking-tight">Webhook HTTP Execution Logs</h1>
         <p class="text-sm text-slate-400 mt-1">Audit log of all incoming HTTP webhook payload requests, response statuses, and latency metrics.</p>

@@ -1,4 +1,4 @@
-<div wire:poll.5s class="space-y-6">
+<div wire:poll.3s class="space-y-6">
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-2xl font-bold text-white tracking-tight">Real-Time Queue & Webhook Metrics</h1>
@@ -6,7 +6,7 @@
         </div>
         <div class="flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg text-xs text-slate-400">
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>Live Polling (5s)</span>
+            <span>Live Polling (3s)</span>
         </div>
     </div>
 

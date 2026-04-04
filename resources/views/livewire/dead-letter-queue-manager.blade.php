@@ -1,4 +1,4 @@
-<div class="space-y-6">
+<div wire:poll.5s class="space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-white tracking-tight">Dead-Letter Queue (DLQ) Manager</h1>
