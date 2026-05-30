@@ -35,18 +35,21 @@ class WebhookDtoParserService
         $eventId = match ($provider) {
             'stripe' => (string) ($jsonData['id'] ?? 'evt_'.$hashFallback($rawPayload)),
             'shopify' => (string) ($request->header('X-Shopify-Webhook-Id') ?? $jsonData['id'] ?? 'shp_'.$hashFallback($rawPayload)),
+            'github' => (string) ($request->header('X-GitHub-Delivery') ?? $jsonData['id'] ?? 'gh_'.$hashFallback($rawPayload)),
             default => (string) ($jsonData['event_id'] ?? $jsonData['id'] ?? 'gen_'.$hashFallback($rawPayload)),
         };
 
         $eventType = match ($provider) {
             'stripe' => (string) ($jsonData['type'] ?? 'unknown'),
             'shopify' => (string) ($request->header('X-Shopify-Topic') ?? $jsonData['topic'] ?? 'unknown'),
+            'github' => (string) ($request->header('X-GitHub-Event') ?? $jsonData['action'] ?? 'unknown'),
             default => (string) ($jsonData['event_type'] ?? $jsonData['type'] ?? 'generic.event'),
         };
 
         $signature = match ($provider) {
             'stripe' => $request->header('Stripe-Signature'),
             'shopify' => $request->header('X-Shopify-Hmac-SHA256'),
+            'github' => $request->header('X-Hub-Signature-256'),
             default => $request->header('X-Signature') ?? $request->header('X-Hub-Signature-256'),
         };
 

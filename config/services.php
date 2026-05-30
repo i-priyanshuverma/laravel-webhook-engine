@@ -43,4 +43,8 @@ return [
         'webhook_secret' => env('SHOPIFY_WEBHOOK_SECRET', ''),
     ],
 
+    'github' => [
+        'webhook_secret' => env('GITHUB_WEBHOOK_SECRET', ''),
+    ],
+
 ];

@@ -8,6 +8,7 @@ use App\Models\WebhookEvent;
 use App\Models\WebhookLog;
 use App\Services\RedisIdempotencyService;
 use App\Services\Validators\GenericWebhookValidator;
+use App\Services\Validators\GithubWebhookValidator;
 use App\Services\Validators\ShopifyWebhookValidator;
 use App\Services\Validators\StripeWebhookValidator;
 use App\Services\WebhookDtoParserService;
@@ -30,6 +31,7 @@ class WebhookIngestionController extends Controller
         $validator = match ($dto->provider) {
             'stripe' => new StripeWebhookValidator,
             'shopify' => new ShopifyWebhookValidator,
+            'github' => new GithubWebhookValidator,
             default => new GenericWebhookValidator,
         };
 

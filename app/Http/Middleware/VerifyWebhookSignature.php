@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\Validators\GithubWebhookValidator;
 use App\Services\Validators\ShopifyWebhookValidator;
 use App\Services\Validators\StripeWebhookValidator;
 use Closure;
@@ -18,6 +19,7 @@ class VerifyWebhookSignature
         $secret = match ($provider) {
             'stripe' => config('services.stripe.webhook_secret'),
             'shopify' => config('services.shopify.webhook_secret'),
+            'github' => config('services.github.webhook_secret'),
             default => config("services.{$provider}.webhook_secret"),
         };
 
@@ -28,6 +30,7 @@ class VerifyWebhookSignature
         $signature = match ($provider) {
             'stripe' => $request->header('Stripe-Signature'),
             'shopify' => $request->header('X-Shopify-Hmac-SHA256'),
+            'github' => $request->header('X-Hub-Signature-256'),
             default => $request->header('X-Signature') ?? $request->header('X-Hub-Signature-256'),
         };
 
@@ -41,6 +44,7 @@ class VerifyWebhookSignature
         $validator = match ($provider) {
             'stripe' => new StripeWebhookValidator,
             'shopify' => new ShopifyWebhookValidator,
+            'github' => new GithubWebhookValidator,
             default => null,
         };
 

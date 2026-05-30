@@ -152,4 +152,35 @@ class WebhookIngestionTest extends TestCase
                 'status' => 'duplicate',
             ]);
     }
+
+    public function test_github_webhook_with_valid_hmac_succeeds(): void
+    {
+        $secret = 'github_secret_key_456';
+        Config::set('services.github.webhook_secret', $secret);
+
+        $payload = json_encode(['action' => 'opened', 'issue' => ['number' => 42]]);
+        $signature = 'sha256='.hash_hmac('sha256', $payload, $secret);
+
+        $response = $this->call(
+            'POST',
+            '/api/v1/webhooks/github',
+            [],
+            [],
+            [],
+            [
+                'HTTP_X_HUB_SIGNATURE_256' => $signature,
+                'HTTP_X_GITHUB_DELIVERY' => 'gh_evt_777',
+                'HTTP_X_GITHUB_EVENT' => 'issues.opened',
+                'CONTENT_TYPE' => 'application/json',
+            ],
+            $payload
+        );
+
+        $response->assertStatus(202)
+            ->assertJson([
+                'status' => 'success',
+                'event_id' => 'gh_evt_777',
+                'provider' => 'github',
+            ]);
+    }
 }
