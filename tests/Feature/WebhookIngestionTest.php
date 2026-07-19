@@ -183,4 +183,32 @@ class WebhookIngestionTest extends TestCase
                 'provider' => 'github',
             ]);
     }
+
+    public function test_duplicate_webhook_burst_delivery_prevention(): void
+    {
+        $mockService = $this->createMock(RedisIdempotencyService::class);
+        $mockService->method('isProcessed')->willReturnOnConsecutiveCalls(false, true);
+        $mockService->method('acquireLock')->willReturnOnConsecutiveCalls(true, false);
+        $this->app->instance(RedisIdempotencyService::class, $mockService);
+
+        $payload = [
+            'event_id' => 'evt_burst_999',
+            'event_type' => 'payment.authorized',
+            'payload' => ['amount' => 5000],
+        ];
+
+        // First rapid request -> Accepted 202
+        $response1 = $this->postJson('/api/v1/webhooks/generic', $payload);
+        $response1->assertStatus(202);
+
+        // Immediate consecutive request with identical event_id -> 409 Conflict
+        $response2 = $this->postJson('/api/v1/webhooks/generic', $payload);
+        $response2->assertStatus(409)
+            ->assertJson([
+                'status' => 'duplicate',
+                'event_id' => 'evt_burst_999',
+            ]);
+
+        $this->assertDatabaseCount('webhook_events', 1);
+    }
 }
