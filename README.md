@@ -14,12 +14,12 @@ An enterprise-grade, high-throughput webhook ingestion, processing, and manageme
 ## Key Features
 
 - **⚡ Sub-Millisecond Ingestion**: Instant `202 Accepted` API responses for incoming provider webhooks.
-- **🔒 Cryptographic HMAC Verification**: Built-in HMAC validation middleware for Stripe (`Stripe-Signature`), Shopify (`X-Shopify-Hmac-SHA256`), and custom providers.
+- **🔒 Cryptographic HMAC Verification**: Built-in HMAC validation middleware for Stripe (`Stripe-Signature`), Shopify (`X-Shopify-Hmac-SHA256`), GitHub App (`X-Hub-Signature-256`), and custom providers.
 - **🛡️ Redis Idempotency**: Atomic `SET NX EX` key locking prevents duplicate event execution under high concurrency.
 - **🚥 Multi-Tier Horizon Queues**: Configured queue priorities (`high`, `default`, `low`) for financial vs operational events.
-- **🔁 Exponential Backoff & Jitter**: Dynamic retry schedule `[10s, 30s, 90s, 300s]` with randomized jitter.
+- **🔁 Exponential Backoff & Jitter**: Dynamic retry schedule `[10s, 30s, 90s, 300s]` with randomized jitter and bulk DLQ exponential backoff replay.
 - **💀 Dead-Letter Queue (DLQ) Capture**: Automatic capture of failed jobs with stack trace logging, Slack overflow alerts, and Sentry integration.
-- **🖥️ Livewire v3 Admin Dashboard**: Real-time queue metrics, latency analytics, searchable log table, and single/bulk manual job replay.
+- **🖥️ Livewire v3 Admin Dashboard**: Reactive real-time `wire:poll` metrics, latency analytics, searchable log table, and single/bulk manual job replay.
 - **☸️ Kubernetes Ready**: Complete production manifests for Web API pods, Horizon worker pods with Horizontal Pod Autoscaler (HPA), Ingress TLS, ConfigMap, and Secrets.
 - **🔍 PHPStan Level 8 & Pint**: Strict static analysis and PSR-12 code formatting verified in GitHub Actions CI.
 
