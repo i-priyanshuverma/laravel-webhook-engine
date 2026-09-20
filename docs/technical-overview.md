@@ -89,3 +89,16 @@ The **Laravel Webhook Engine** is an enterprise-grade, high-throughput webhook i
 ### 6. Livewire v3 Admin UI (`DashboardMetrics`, `DeadLetterQueueManager`, `WebhookLogTable`)
 - Real-time polling monitoring queue metrics, execution latency, and provider distribution.
 - One-click manual job replay for failed DLQ records.
+
+### 7. Circuit Breaker Service (`CircuitBreakerService`)
+- Provider-level fault isolation via Redis-backed `CLOSED` → `OPEN` → `HALF_OPEN` state machine.
+- Automatically detects failing upstream providers (threshold: 5 failures / 60s) and releases queued jobs with a delay (30s) instead of triggering cascading failures.
+- Probes provider recovery during `HALF_OPEN` with automatic closure after 2 consecutive successful events.
+
+### 8. Payload Encryption at Rest (`PayloadEncryptionService`)
+- Envelope AES-256-CBC encryption for all incoming raw payload content prior to persistence.
+- Secures sensitive customer PII, credit card references, and third-party secrets stored in MySQL `encrypted_payload` column.
+
+### 9. System Probes & Health Checks (`HealthCheckController`)
+- `GET /api/v1/health` providing deep observability for Kubernetes liveness & readiness probes.
+- Probes MySQL PDO connection latency, Redis ping latency, and summarizes real-time event pipeline throughput metrics.
