@@ -49,8 +49,10 @@ class ProcessWebhookJob implements ShouldQueue
         return min(300, $baseDelay + $jitter);
     }
 
-    public function handle(RedisIdempotencyService $idempotencyService, CircuitBreakerService $circuitBreaker): void
+    public function handle(RedisIdempotencyService $idempotencyService, ?CircuitBreakerService $circuitBreaker = null): void
     {
+        $circuitBreaker ??= app(CircuitBreakerService::class);
+
         $provider = $this->webhookEvent->provider;
 
         // Circuit breaker check — if the circuit is open, release back to queue with delay

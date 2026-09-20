@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Jobs\ProcessWebhookJob;
 use App\Models\DeadLetterQueueEvent;
 use App\Models\WebhookEvent;
+use App\Services\CircuitBreakerService;
 use App\Services\RedisIdempotencyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
@@ -29,8 +30,17 @@ class ProcessWebhookJobTest extends TestCase
             ->method('markProcessed')
             ->with('stripe', 'evt_unit_001');
 
+        $mockCircuitBreaker = $this->createMock(CircuitBreakerService::class);
+        $mockCircuitBreaker->expects($this->once())
+            ->method('isAvailable')
+            ->with('stripe')
+            ->willReturn(true);
+        $mockCircuitBreaker->expects($this->once())
+            ->method('recordSuccess')
+            ->with('stripe');
+
         $job = new ProcessWebhookJob($event);
-        $job->handle($mockIdempotency);
+        $job->handle($mockIdempotency, $mockCircuitBreaker);
 
         $event->refresh();
         $this->assertEquals(WebhookEvent::STATUS_COMPLETED, $event->status);
@@ -69,6 +79,12 @@ class ProcessWebhookJobTest extends TestCase
             'payload' => ['should_fail' => true],
             'status' => WebhookEvent::STATUS_PENDING,
         ]);
+
+        $mockCircuitBreaker = $this->createMock(CircuitBreakerService::class);
+        $mockCircuitBreaker->expects($this->once())
+            ->method('recordFailure')
+            ->with('shopify');
+        $this->app->instance(CircuitBreakerService::class, $mockCircuitBreaker);
 
         $exception = new RuntimeException('Job execution failed completely');
         $job = new ProcessWebhookJob($event);
