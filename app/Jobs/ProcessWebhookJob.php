@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\WebhookEvent;
+use App\Services\CircuitBreakerService;
 use App\Services\DeadLetterQueueService;
 use App\Services\RedisIdempotencyService;
 use Illuminate\Bus\Queueable;
@@ -48,17 +49,32 @@ class ProcessWebhookJob implements ShouldQueue
         return min(300, $baseDelay + $jitter);
     }
 
-    public function handle(RedisIdempotencyService $idempotencyService): void
+    public function handle(RedisIdempotencyService $idempotencyService, CircuitBreakerService $circuitBreaker): void
     {
+        $provider = $this->webhookEvent->provider;
+
+        // Circuit breaker check — if the circuit is open, release back to queue with delay
+        if (! $circuitBreaker->isAvailable($provider)) {
+            Log::warning(sprintf(
+                '[ProcessWebhookJob] Circuit OPEN for provider %s — delaying event %s by 30s',
+                $provider,
+                $this->webhookEvent->event_id
+            ));
+
+            $this->release(30);
+
+            return;
+        }
+
         Log::info(sprintf(
             '[ProcessWebhookJob] Processing event %s (provider: %s, attempt: %d/%d)',
             $this->webhookEvent->event_id,
-            $this->webhookEvent->provider,
+            $provider,
             $this->attempts(),
             $this->tries
         ), [
             'event_id' => $this->webhookEvent->event_id,
-            'provider' => $this->webhookEvent->provider,
+            'provider' => $provider,
             'event_type' => $this->webhookEvent->event_type,
             'attempt' => $this->attempts(),
         ]);
@@ -78,10 +94,10 @@ class ProcessWebhookJob implements ShouldQueue
             'error_message' => null,
         ]);
 
-        $idempotencyService->markProcessed(
-            $this->webhookEvent->provider,
-            $this->webhookEvent->event_id
-        );
+        $idempotencyService->markProcessed($provider, $this->webhookEvent->event_id);
+
+        // Record success for circuit breaker (matters during half-open state)
+        $circuitBreaker->recordSuccess($provider);
     }
 
     public function failed(Throwable $exception): void
@@ -101,6 +117,11 @@ class ProcessWebhookJob implements ShouldQueue
             'status' => WebhookEvent::STATUS_FAILED,
             'error_message' => $exception->getMessage(),
         ]);
+
+        // Record failure for circuit breaker
+        /** @var CircuitBreakerService $circuitBreaker */
+        $circuitBreaker = app(CircuitBreakerService::class);
+        $circuitBreaker->recordFailure($this->webhookEvent->provider);
 
         /** @var DeadLetterQueueService $dlqService */
         $dlqService = app(DeadLetterQueueService::class);

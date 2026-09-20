@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\ProcessWebhookJob;
 use App\Models\WebhookEvent;
 use App\Models\WebhookLog;
+use App\Services\PayloadEncryptionService;
 use App\Services\RedisIdempotencyService;
 use App\Services\Validators\GenericWebhookValidator;
 use App\Services\Validators\GithubWebhookValidator;
@@ -21,6 +22,7 @@ class WebhookIngestionController extends Controller
     public function __construct(
         private readonly RedisIdempotencyService $idempotencyService,
         private readonly WebhookDtoParserService $dtoParserService,
+        private readonly PayloadEncryptionService $encryptionService,
     ) {}
 
     public function ingest(Request $request, string $provider): JsonResponse
@@ -77,6 +79,9 @@ class WebhookIngestionController extends Controller
         }
 
         try {
+            // Encrypt payload at rest using AES-256-CBC
+            $encryptedPayload = $this->encryptionService->encrypt($dto->payload);
+
             $webhookEvent = WebhookEvent::updateOrCreate(
                 [
                     'event_id' => $dto->eventId,
@@ -85,6 +90,7 @@ class WebhookIngestionController extends Controller
                 [
                     'event_type' => $dto->eventType,
                     'payload' => $dto->payload,
+                    'encrypted_payload' => $encryptedPayload,
                     'status' => WebhookEvent::STATUS_PENDING,
                 ]
             );

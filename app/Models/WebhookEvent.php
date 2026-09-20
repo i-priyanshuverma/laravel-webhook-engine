@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
  * @property string $provider
  * @property string $event_type
  * @property array<string, mixed> $payload
+ * @property string|null $encrypted_payload
  * @property string $status
  * @property int $retry_count
  * @property string|null $error_message
@@ -41,6 +42,7 @@ class WebhookEvent extends Model
         'provider',
         'event_type',
         'payload',
+        'encrypted_payload',
         'status',
         'retry_count',
         'error_message',
